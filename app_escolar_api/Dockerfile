@@ -19,9 +19,12 @@ RUN pip install gunicorn
 # Copiar el código de la aplicación
 COPY . .
 
+# Crear directorios necesarios
+RUN mkdir -p /app/staticfiles /app/media
+
 # Exponer el puerto 8000
 EXPOSE 8000
 
-# Nota: collectstatic se ejecuta en el docker-compose.yml al iniciar el contenedor
-# para asegurar que la base de datos esté disponible si es necesario
+# Comando por defecto - puede ser sobrescrito por docker-compose o Coolify
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 app_escolar_api.wsgi:application"]
 
