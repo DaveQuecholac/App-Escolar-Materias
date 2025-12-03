@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev \
     pkg-config \
     netcat-openbsd \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements.txt e instalar dependencias Python
@@ -21,11 +22,20 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copiar todo el código de la aplicación
 COPY . /app/
 
+# Convertir finales de línea del entrypoint a LF y hacer ejecutable
+RUN dos2unix /app/entrypoint.sh 2>/dev/null || true && \
+    chmod +x /app/entrypoint.sh
+
+# Verificar que entrypoint.sh existe y es ejecutable
+RUN test -f /app/entrypoint.sh && \
+    test -x /app/entrypoint.sh && \
+    echo "Entrypoint verified successfully" || \
+    (echo "ERROR: entrypoint.sh not found or not executable!" && \
+     ls -la /app/ | head -20 && \
+     exit 1)
+
 # Crear directorios necesarios
 RUN mkdir -p /app/staticfiles /app/media
-
-# Hacer el entrypoint ejecutable
-RUN chmod +x /app/entrypoint.sh
 
 # Exponer el puerto 8000
 EXPOSE 8000
