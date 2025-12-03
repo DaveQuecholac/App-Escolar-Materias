@@ -9,6 +9,9 @@ until nc -z ${DB_HOST:-db} ${DB_PORT:-3306}; do
 done
 echo "Database is ready!"
 
+# Cambiar al directorio de trabajo
+cd /app
+
 # Verificar que manage.py existe
 if [ ! -f "/app/manage.py" ]; then
     echo "ERROR: manage.py not found in /app/"

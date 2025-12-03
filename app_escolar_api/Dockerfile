@@ -19,19 +19,20 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt && \
     pip install --no-cache-dir gunicorn
 
-# Copiar todo el código de la aplicación
+# Copiar el entrypoint.sh a una ubicación que NO será sobrescrita por el volumen
+COPY entrypoint.sh /entrypoint.sh
+RUN dos2unix /entrypoint.sh 2>/dev/null || true && \
+    chmod +x /entrypoint.sh
+
+# Copiar el resto del código de la aplicación
 COPY . /app/
 
-# Convertir finales de línea del entrypoint a LF y hacer ejecutable
-RUN dos2unix /app/entrypoint.sh 2>/dev/null || true && \
-    chmod +x /app/entrypoint.sh
-
 # Verificar que entrypoint.sh existe y es ejecutable
-RUN test -f /app/entrypoint.sh && \
-    test -x /app/entrypoint.sh && \
+RUN test -f /entrypoint.sh && \
+    test -x /entrypoint.sh && \
     echo "Entrypoint verified successfully" || \
     (echo "ERROR: entrypoint.sh not found or not executable!" && \
-     ls -la /app/ | head -20 && \
+     ls -la / | grep entrypoint && \
      exit 1)
 
 # Crear directorios necesarios
@@ -40,5 +41,5 @@ RUN mkdir -p /app/staticfiles /app/media
 # Exponer el puerto 8000
 EXPOSE 8000
 
-# Usar el script de entrada
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Usar el script de entrada desde la raíz (no será sobrescrito por el volumen)
+ENTRYPOINT ["/entrypoint.sh"]
