@@ -23,9 +23,21 @@ COPY app_escolar_api/manage.py ./manage.py
 # Copiar el directorio completo de la aplicación Django
 COPY app_escolar_api/app_escolar_api/ ./app_escolar_api/
 
-# Copiar script de entrada
-COPY app_escolar_api/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Crear script de entrada
+RUN echo '#!/bin/bash' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo 'if [ ! -f "/app/manage.py" ]; then' >> /entrypoint.sh && \
+    echo '    echo "ERROR: manage.py not found in /app/"' >> /entrypoint.sh && \
+    echo '    ls -la /app/' >> /entrypoint.sh && \
+    echo '    exit 1' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    echo 'echo "Running database migrations..."' >> /entrypoint.sh && \
+    echo 'python manage.py migrate --noinput' >> /entrypoint.sh && \
+    echo 'echo "Collecting static files..."' >> /entrypoint.sh && \
+    echo 'python manage.py collectstatic --noinput' >> /entrypoint.sh && \
+    echo 'echo "Starting Gunicorn..."' >> /entrypoint.sh && \
+    echo 'exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile - --error-logfile - app_escolar_api.wsgi:application' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
 # Crear directorios necesarios
 RUN mkdir -p /app/staticfiles /app/media
