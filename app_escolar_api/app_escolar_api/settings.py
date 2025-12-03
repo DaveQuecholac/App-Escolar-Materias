@@ -39,16 +39,36 @@ MIDDLEWARE = [
 # --- CONFIGURACIÓN DE CORS (Cross-Origin Resource Sharing) ---
 cors_origins = os.environ.get(
     'CORS_ALLOWED_ORIGINS', 
-    'http://localhost:4200,http://localhost:80,https://vacasdelfin.austone.iokoia.com'
+    'http://localhost:4200,http://localhost:80,https://vacasdelfin.austone.iokoia.com,https://webappfinal.austone.iokoia.com'
 )
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
 CORS_ALLOW_CREDENTIALS = True
+# Configuración adicional para preflight requests
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # --- CONFIGURACIÓN DE CSRF (Cross-Site Request Forgery) ---
 # CRÍTICO: Necesario para Django 4.0+ cuando se hacen POSTs desde otros dominios
 csrf_trusted = os.environ.get(
     'CSRF_TRUSTED_ORIGINS',
-    'https://vacasdelfin.austone.iokoia.com'
+    'https://vacasdelfin.austone.iokoia.com,https://webappfinal.austone.iokoia.com'
 )
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted.split(',') if origin.strip()]
 

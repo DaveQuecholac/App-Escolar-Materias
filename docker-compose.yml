@@ -42,8 +42,8 @@ services:
       - DB_NAME=app_escolar_db
       - DB_USER=app_user
       - DB_PASSWORD=app_password
-      - CSRF_TRUSTED_ORIGINS=https://vacasdelfin.austone.iokoia.com
-      - CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:80,http://localhost:3000,https://vacasdelfin.austone.iokoia.com
+      - CSRF_TRUSTED_ORIGINS=https://vacasdelfin.austone.iokoia.com,https://webappfinal.austone.iokoia.com
+      - CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:80,http://localhost:3000,https://vacasdelfin.austone.iokoia.com,https://webappfinal.austone.iokoia.com
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
