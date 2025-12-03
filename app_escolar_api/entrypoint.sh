@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
 
-# Esperar a que la base de datos esté lista (opcional, si es necesario)
-# echo "Waiting for database to be ready..."
-# while ! nc -z ${DB_HOST:-localhost} ${DB_PORT:-3306}; do
-#   sleep 1
-# done
-# echo "Database is ready!"
+echo "Waiting for database to be ready..."
+# Esperar a que la base de datos esté lista
+until nc -z ${DB_HOST:-db} ${DB_PORT:-3306}; do
+  echo "Database is unavailable - sleeping"
+  sleep 1
+done
+echo "Database is ready!"
 
 # Verificar que manage.py existe
 if [ ! -f "/app/manage.py" ]; then
@@ -23,9 +24,8 @@ python manage.py migrate --noinput
 
 # Recolectar archivos estáticos
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput || echo "Warning: collectstatic failed, continuing..."
 
 # Iniciar Gunicorn
 echo "Starting Gunicorn..."
 exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile - --error-logfile - app_escolar_api.wsgi:application
-

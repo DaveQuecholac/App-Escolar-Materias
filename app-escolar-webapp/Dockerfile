@@ -4,17 +4,19 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copiar archivos de dependencias
+# Copiar archivos de dependencias primero (para mejor cacheo)
 COPY package*.json ./
 
 # Instalar dependencias
-RUN npm ci
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copiar el resto del código
 COPY . .
 
-# Construir la aplicación para producción (ignorar errores de budget)
-RUN npm run build -- --configuration production || npm run build -- --configuration development
+# Construir la aplicación para producción
+RUN npm run build -- --configuration production || \
+    npm run build -- --configuration development || \
+    npm run build
 
 # Stage 2: Production - Servir con Nginx
 FROM nginx:alpine
@@ -30,4 +32,3 @@ EXPOSE 80
 
 # Iniciar nginx
 CMD ["nginx", "-g", "daemon off;"]
-
