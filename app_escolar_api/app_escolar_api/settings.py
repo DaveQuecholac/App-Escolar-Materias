@@ -3,11 +3,14 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Mantén la clave secreta en variables de entorno en producción
-SECRET_KEY = '-_&+lsebec(whhw!%n@ww&1j=4-^j_if9x8$q778+99oz&!ms2'
+SECRET_KEY = os.environ.get('SECRET_KEY', '-_&+lsebec(whhw!%n@ww&1j=4-^j_if9x8$q778+99oz&!ms2')
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,vacasdelfin.austone.iokoia.com').split(',')
+# ALLOWED_HOSTS
+allowed_hosts_env = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,vacasdelfin.austone.iokoia.com')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -33,26 +36,23 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Configuración de CORS: define orígenes permitidos y quita CORS_ORIGIN_ALLOW_ALL
+# --- CONFIGURACIÓN DE CORS (Cross-Origin Resource Sharing) ---
 cors_origins = os.environ.get(
     'CORS_ALLOWED_ORIGINS', 
-    'http://localhost:4200,http://localhost:80,https://webappfinal.austone.iokoia.com'
+    'http://localhost:4200,http://localhost:80,https://vacasdelfin.austone.iokoia.com'
 )
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(',') if origin.strip()]
 CORS_ALLOW_CREDENTIALS = True
 
+# --- CONFIGURACIÓN DE CSRF (Cross-Site Request Forgery) ---
+# CRÍTICO: Necesario para Django 4.0+ cuando se hacen POSTs desde otros dominios
+csrf_trusted = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://vacasdelfin.austone.iokoia.com'
+)
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted.split(',') if origin.strip()]
+
 ROOT_URLCONF = 'app_escolar_api.urls'
-
-
-
-import os
-
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 TEMPLATES = [
     {
@@ -72,7 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'app_escolar_api.wsgi.application'
 
-# Configuración de base de datos - soporta variables de entorno para Docker
+# --- CONFIGURACIÓN DE BASE DE DATOS ---
 DB_HOST = os.environ.get('DB_HOST', '127.0.0.1')
 DB_PORT = os.environ.get('DB_PORT', '3307')
 DB_NAME = os.environ.get('DB_NAME', 'app_escolar_db')
@@ -119,7 +119,14 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
+# --- ARCHIVOS ESTÁTICOS Y MEDIA ---
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+# Asegúrate de crear la carpeta 'static' en tu proyecto si usas esto:
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': False,
