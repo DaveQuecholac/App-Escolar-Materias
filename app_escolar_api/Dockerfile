@@ -12,35 +12,33 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements y instalar dependencias de Python
-COPY requirements.txt .
+# Copiar requirements desde app_escolar_api y instalar dependencias
+COPY app_escolar_api/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
 
-# Listar qué hay en el contexto antes de copiar (diagnóstico)
-RUN echo "=== DIAGNOSTICO: Listando contexto antes de COPY ===" && ls -la || echo "No se puede listar contexto"
+# Copiar manage.py
+COPY app_escolar_api/manage.py ./manage.py
 
-# Copiar todos los archivos de la aplicación
-COPY . .
+# Copiar el directorio completo de la aplicación Django
+COPY app_escolar_api/app_escolar_api/ ./app_escolar_api/
 
-# Listar qué se copió (diagnóstico)
-RUN echo "=== DIAGNOSTICO: Después de COPY ===" && \
-    echo "Contenido de /app:" && \
-    ls -la /app/ && \
-    echo "=== Buscando manage.py ===" && \
-    find /app -name "manage.py" -type f || echo "manage.py NO ENCONTRADO"
-
-# Copiar y configurar script de entrada
-COPY entrypoint.sh /entrypoint.sh
+# Copiar script de entrada
+COPY app_escolar_api/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# Copiar my.cnf si existe
+COPY app_escolar_api/my.cnf ./my.cnf 2>/dev/null || echo "my.cnf no encontrado, continuando..."
 
 # Crear directorios necesarios
 RUN mkdir -p /app/staticfiles /app/media
 
 # Verificar que los archivos críticos existen
-RUN test -f /app/manage.py || (echo "ERROR: manage.py no existe en /app/" && ls -la /app/ && exit 1) && \
-    test -d /app/app_escolar_api || (echo "ERROR: app_escolar_api no existe" && exit 1) && \
-    echo "Verificación exitosa: archivos críticos encontrados"
+RUN test -f /app/manage.py && \
+    test -d /app/app_escolar_api && \
+    test -f /app/app_escolar_api/settings.py && \
+    echo "Verificación exitosa: archivos críticos encontrados" || \
+    (echo "ERROR: Archivos críticos no encontrados" && ls -la /app/ && exit 1)
 
 # Exponer el puerto 8000
 EXPOSE 8000
