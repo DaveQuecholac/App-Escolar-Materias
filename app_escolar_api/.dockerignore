@@ -18,6 +18,11 @@ db.sqlite3-journal
 /staticfiles/*
 !/staticfiles/.gitkeep
 
+# Asegurar que manage.py y archivos importantes NO se excluyan
+!manage.py
+!entrypoint.sh
+!requirements.txt
+
 # IDE
 .vscode/
 .idea/
