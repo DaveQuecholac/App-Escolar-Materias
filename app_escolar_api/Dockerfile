@@ -27,9 +27,6 @@ COPY app_escolar_api/app_escolar_api/ ./app_escolar_api/
 COPY app_escolar_api/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Copiar my.cnf si existe
-COPY app_escolar_api/my.cnf ./my.cnf 2>/dev/null || echo "my.cnf no encontrado, continuando..."
-
 # Crear directorios necesarios
 RUN mkdir -p /app/staticfiles /app/media
 
