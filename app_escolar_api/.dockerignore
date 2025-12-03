@@ -1,49 +1,18 @@
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+*.pyc
+*.pyo
+*.pyd
 venv/
 env/
 ENV/
 .venv
-
-# Django
 *.log
 db.sqlite3
-db.sqlite3-journal
-/media/*
-!/media/.gitkeep
-/staticfiles/*
-!/staticfiles/.gitkeep
-
-# Asegurar que manage.py y archivos importantes NO se excluyan
-!manage.py
-!entrypoint.sh
-!requirements.txt
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Git
 .git/
 .gitignore
-
-# Node
 node_modules/
-npm-debug.log
-
-# Otros
-*.md
+.DS_Store
+Thumbs.db
 .env
 .env.local
 
