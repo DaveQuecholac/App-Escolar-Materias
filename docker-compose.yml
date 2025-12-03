@@ -1,0 +1,79 @@
+# version: '3.8'  # Obsoleto en Docker Compose v2
+
+services:
+  # Base de datos MySQL
+  db:
+    image: mysql:8.0
+    container_name: app_escolar_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: app_escolar_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./app_escolar_api/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend Django
+  backend:
+    build:
+      context: ./app_escolar_api
+      dockerfile: Dockerfile
+    container_name: app_escolar_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=app_escolar_api.settings
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=app_escolar_db
+      - DB_USER=app_user
+      - DB_PASSWORD=app_password
+    volumes:
+      - ./app_escolar_api:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 app_escolar_api.wsgi:application"
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./app-escolar-webapp
+      dockerfile: Dockerfile
+    container_name: app_escolar_frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+volumes:
+  mysql_data:
+  static_volume:
+  media_volume:
+
+networks:
+  app_network:
+    driver: bridge
+
